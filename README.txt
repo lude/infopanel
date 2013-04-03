@@ -12,3 +12,16 @@ Getting Started
 
 - $venv/bin/pserve development.ini
 
+Values for .ini
+---------------
+forecastio.apikey = visit https://developer.forecast.io/
+forecastio.latitude =
+forecastio.longitude =
+
+reddit.subreddits = I use worldnews+news
+
+twitter.consumer_key = 
+twitter.consumer_secret = 
+twitter.access_token = 
+twitter.access_token_secret = 
+twitter.list_id = 
