@@ -1,0 +1,17 @@
+<table class="table table-bordered table-condensed">
+ <th>Weather from forecast.io</th>
+ <tr><td><h1>Now
+ <span style="float:right; font-size:60px" class="weather-icon" data-icon="${currently['icon']}"></span><br/>
+ <span style="font-weight:normal">${currently['summary']}
+ ${currently['temperature']}&deg;</span</h1></td></tr>
+ <tr><td><h4>Next Hour<br/>
+ <span style="font-weight:normal">${minutely['summary']}</span></h4></td></tr>
+ <tr><td><h4>Next 24 Hours<br/>
+ <span style="font-weight:normal">${hourly['summary']}</span></h4></td></tr>
+ <tr><td><h4>Next Week<br/>
+ <span style="font-weight:normal">${daily['summary']}</span></h4></td></tr>
+ <tr tal:repeat="byday weekly"><td><h5>${byday['day']} -
+ ${byday['low']}&deg;-${byday['high']}&deg; - ${byday['winddir']} ${byday['windspeed']} mi/h
+ <span style="float:right;" class="weather-icon" data-icon="${byday['icon']}"></span><br/>
+ <span style="font-weight:normal">${byday['summary']}</span></h5></td></tr>
+</table>

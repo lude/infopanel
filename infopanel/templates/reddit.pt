@@ -1,0 +1,8 @@
+<table class="table table-bordered table-condensed">
+ <th>News from reddit</th>
+ <tr tal:repeat="r news"><td>
+ <a href="${r['url']}">${r['title']}</a><br/>
+ ${r['subreddit']} &#183; ${r['score']} &#183; ${r['author']} &#183;
+ ${r['created']}
+ </td></tr>
+</table>
