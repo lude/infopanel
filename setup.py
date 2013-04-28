@@ -11,15 +11,13 @@ requires = [
     'SQLAlchemy',
     'transaction',
     'pyramid_tm',
-    'pyramid_debugtoolbar',
     'zope.sqlalchemy',
     'waitress',
-    'oauth2',
-    'requests',
+    'rauth',
     ]
 
 setup(name='infopanel',
-      version='0.1',
+      version='0.0',
       description='infopanel',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[

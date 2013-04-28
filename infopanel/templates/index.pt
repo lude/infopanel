@@ -66,7 +66,8 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="#">Good <span id='greeting'>Morning</span> Dave and Michelle</a>
+          <a class="brand" href="#">Good <span id="greeting">Morning</span> Dave and Michelle</a>
+	  <div class="pull-right" style="padding: 10px 20px 10px;color:#999999;font-size:20px;" id="clock"></div>
         </div>
       </div>
     </div>
@@ -80,7 +81,13 @@
         News loading...
         </div>
         <div class="span4" id='column-right'>
+	<span id="path">
+	Path loading...
+	</span>
+	<br>
+	<span id="twitter">
         Twitter loading...
+	</span>
         </div>
       </div><!--/row-->
     </div><!--/.fluid-container-->
@@ -94,7 +101,16 @@
     $(document).ready(function() {
        $('#column-left').load('/forecastio');
        $('#column-center').load('/redditnews');
-       $('#column-right').load('/twitter');
+       $('#twitter').load('/twitter');
+       $('#path').load('/pathtrain');
+       var forecastRefresh = setInterval(function(){
+         $('#column-left').load('/forecastio')}, 600000);
+       var redditRefresh = setInterval(function(){
+         $('#column-center').load('/redditnews')}, 600000);
+       var pathRefresh = setInterval(function(){
+         $('#path').load('/pathtrain')}, 30000);
+       var twitterRefresh = setInterval(function(){
+         $('#twitter').load('/twitter')}, 600000);
     });
     </script>
   </body>

@@ -13,11 +13,11 @@ import oauth2 as oauth
 import time
 
 
-def oauth_req(request, url, key, secret, http_method="GET", post_body='',
+def oauth_req(url, key, secret, http_method="GET", post_body='',
               http_headers=None):
     consumer = oauth.Consumer(
-        key=request.registry.settings.get('twitter.consumer_key'),
-        secret=request.registry.settings.get('twitter.consumer_secret')
+        key='uJOBRUQCVQvVSkOcVF4Pg',
+        secret='U49Nciwx63kLV32KCoiGc3U13467Y38UsB5G45E1my4'
     )
     token = oauth.Token(key=key, secret=secret)
     client = oauth.Client(consumer, token)
@@ -114,11 +114,7 @@ def forecastio(self):
 
     # grab the forecast.io json
     r = requests.get(
-        'https://api.forecast.io/forecast/%s/%s,%s' % (
-            self.registry.settings.get('forecastio.apikey'),
-            self.registry.settings.get('forecastio.latitude'),
-            self.registry.settings.get('forecastio.longitude')
-        )
+        'https://api.forecast.io/forecast/3df3692a7ae010dc994ead5bac3655f2/40.73853,-74.03145'
     )
 
     #pythonize it
@@ -151,10 +147,10 @@ def forecastio(self):
         d['high'] = int(forecast['temperatureMax'])
         d['low'] = int(forecast['temperatureMin'])
         d['windspeed'] = int(forecast['windSpeed'])
-        try:
+	try:
             d['winddir'] = degrees_to_direction(forecast['windBearing'])
-        except KeyError:
-            d['winddir'] = ''
+	except KeyError:
+	    d['winddir'] = ''
         d['summary'] = forecast['summary']
         d['icon'] = webfont.get(forecast['icon'])
         weekly.append(d)
@@ -173,9 +169,7 @@ def forecastio(self):
 @view_config(route_name='redditnews')
 def redditnews(self):
     r = requests.get(
-        "http://www.reddit.com/r/%s.json" % (
-            self.registry.settings.get('reddit.subreddits')
-        )
+        "http://www.reddit.com/r/worldnews+news.json"
     )
 
     j = json.loads(r.content)['data']['children']
@@ -201,10 +195,9 @@ def redditnews(self):
 @view_config(route_name='twitter')
 def twitter(self):
     home_timeline = oauth_req(
-        self,
         'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833',
-        self.registry.settings.get('twitter.access_token'),
-        self.registry.settings.get('twitter.access_token_secret')
+        '57659893-ucMjCx9xZ5IqNNIJuuewld8gd3PtuTwTSFJyVcFNg',
+        'dLt7KQfpsdLUjm7MyVFywT244t0LtUM5OROTWtmR9Q',
     )
 
     t = json.loads(home_timeline)
@@ -222,5 +215,48 @@ def twitter(self):
     return render_to_response(
         'templates/twitter.pt', {
             'tweets': tweets,
-        }, self
-    )
+        }, self)
+
+
+@view_config(route_name='pathtrain')
+def path_train(self):
+    from gtfs import Schedule
+    from gtfs.types import TransitTime
+    from gtfs.entity import *
+    from sqlalchemy import and_
+    
+    sched = Schedule("path.db")
+    
+    nowtime = datetime.datetime.now().strftime('%H:%M:%S')
+    nowdate = datetime.datetime.now().date()
+    now = datetime.datetime.now()
+    seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+    periods = sched.service_for_date(nowdate)
+    
+    q = sched.session.query(StopTime).join(Stop).join(Trip).join(Route).filter(
+        Trip.service_id.in_(periods)
+    ).filter(
+        Stop.stop_name == "Hoboken"
+    ).filter(
+        Route.route_id.in_(['859', '1024'])
+    ).filter(
+        Trip.direction_id == 1
+    ).order_by(StopTime.departure_time)
+    
+    print q
+    print q.count()
+    
+    i = 0
+    departure_times = []
+    for stop in q.all():
+        if i == 2:
+            break
+        if stop.departure_time.val > seconds_since_midnight and stop.departure_time.val < seconds_since_midnight + 7200:
+            d = datetime.timedelta(seconds=(stop.departure_time.val - seconds_since_midnight))
+            time = "%s (%d minutes)" % ((datetime.datetime.now() + d).strftime('%I:%M%p'),(int((stop.departure_time.val - seconds_since_midnight) / 60)))
+            departure_times.append(time)
+            i += 1
+    return render_to_response(
+        'templates/pathtrain.pt', {
+            'times': departure_times,
+        }, self)
