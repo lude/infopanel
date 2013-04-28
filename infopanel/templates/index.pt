@@ -103,6 +103,8 @@
        $('#column-center').load('/redditnews');
        $('#twitter').load('/twitter');
        $('#path').load('/pathtrain');
+       $('#greeting').load('/greeting');
+       $('#clock').load('/clock');
        var forecastRefresh = setInterval(function(){
          $('#column-left').load('/forecastio')}, 600000);
        var redditRefresh = setInterval(function(){
@@ -111,6 +113,10 @@
          $('#path').load('/pathtrain')}, 30000);
        var twitterRefresh = setInterval(function(){
          $('#twitter').load('/twitter')}, 600000);
+       var greetingRefresh = setInterval(function(){
+         $('#greeting').load('/greeting')}, 600000);
+       var clockRefresh = setInterval(function(){
+         $('#clock').load('/clock')}, 60000);
     });
     </script>
   </body>

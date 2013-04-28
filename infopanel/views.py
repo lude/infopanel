@@ -147,10 +147,10 @@ def forecastio(self):
         d['high'] = int(forecast['temperatureMax'])
         d['low'] = int(forecast['temperatureMin'])
         d['windspeed'] = int(forecast['windSpeed'])
-	try:
+        try:
             d['winddir'] = degrees_to_direction(forecast['windBearing'])
-	except KeyError:
-	    d['winddir'] = ''
+        except KeyError:
+            d['winddir'] = ''
         d['summary'] = forecast['summary']
         d['icon'] = webfont.get(forecast['icon'])
         weekly.append(d)
@@ -224,15 +224,15 @@ def path_train(self):
     from gtfs.types import TransitTime
     from gtfs.entity import *
     from sqlalchemy import and_
-    
+
     sched = Schedule("path.db")
-    
+
     nowtime = datetime.datetime.now().strftime('%H:%M:%S')
     nowdate = datetime.datetime.now().date()
     now = datetime.datetime.now()
     seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
     periods = sched.service_for_date(nowdate)
-    
+
     q = sched.session.query(StopTime).join(Stop).join(Trip).join(Route).filter(
         Trip.service_id.in_(periods)
     ).filter(
@@ -242,10 +242,10 @@ def path_train(self):
     ).filter(
         Trip.direction_id == 1
     ).order_by(StopTime.departure_time)
-    
+
     print q
     print q.count()
-    
+
     i = 0
     departure_times = []
     for stop in q.all():
@@ -253,10 +253,43 @@ def path_train(self):
             break
         if stop.departure_time.val > seconds_since_midnight and stop.departure_time.val < seconds_since_midnight + 7200:
             d = datetime.timedelta(seconds=(stop.departure_time.val - seconds_since_midnight))
-            time = "%s (%d minutes)" % ((datetime.datetime.now() + d).strftime('%I:%M%p'),(int((stop.departure_time.val - seconds_since_midnight) / 60)))
+            time = "%s (%d minutes)" % (
+                (datetime.datetime.now() + d).strftime('%I:%M%p'),
+                (int((stop.departure_time.val - seconds_since_midnight) / 60))
+            )
             departure_times.append(time)
             i += 1
     return render_to_response(
         'templates/pathtrain.pt', {
             'times': departure_times,
         }, self)
+
+
+@view_config(route_name='greeting')
+def greeting(self):
+    from time import strftime
+
+    #TODO this seems like a backward way to do this
+    hour = int(strftime("%H"))
+
+    if 2 <= hour <= 11:
+        retval = "Morning"
+    if 12 <= hour <= 16:
+        retval = "Afternoon"
+    if 17 <= hour <= 21:
+        retval = "Evening"
+    if 22 <= hour <= 23:
+        retval = "Night"
+    if 0 <= hour <= 1:
+        retval = "Night"
+    return Response(retval)
+
+
+@view_config(route_name='clock')
+def clock(self):
+    from time import strftime
+
+    #TODO this seems like a backward way to do this
+    clock = strftime("%I:%M %p")
+
+    return Response(clock)
