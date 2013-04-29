@@ -290,6 +290,6 @@ def clock(self):
     from time import strftime
 
     #TODO this seems like a backward way to do this
-    clock = strftime("%I:%M %p")
+    clock = strftime("%a %m/%d %I:%M %p")
 
     return Response(clock)
