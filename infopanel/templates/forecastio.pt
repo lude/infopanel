@@ -10,8 +10,9 @@
  <span style="font-weight:normal">${hourly['summary']}</span></h4></td></tr>
  <tr><td><h4>Next Week<br/>
  <span style="font-weight:normal">${daily['summary']}</span></h4></td></tr>
- <tr tal:repeat="byday weekly"><td><h5>${byday['day']} -
- ${byday['low']}&deg;-${byday['high']}&deg; - ${byday['winddir']} ${byday['windspeed']} mi/h
- <span style="float:right;" class="weather-icon" data-icon="${byday['icon']}"></span><br/>
- <span style="font-weight:normal">${byday['summary']}</span></h5></td></tr>
+ <tr tal:repeat="byday weekly"><td>
+ <h2><span style="float:right;" class="weather-icon" data-icon="${byday['icon']}"></span></h2>
+ <h5><b style="font-size:120%;">${byday['day']} - ${byday['high']}&deg;</b>/${byday['low']}&deg; - ${byday['winddir']} ${byday['windspeed']} mi/h</h5>
+ <h5><span style="font-weight:normal">${byday['summary']}</span></h5>
+ </td></tr>
 </table>

@@ -224,6 +224,7 @@ def path_train(self):
     from gtfs.types import TransitTime
     from gtfs.entity import *
     from sqlalchemy import and_
+    from BeautifulSoup import BeautifulSoup
 
     sched = Schedule("path.db")
 
@@ -259,9 +260,20 @@ def path_train(self):
             )
             departure_times.append(time)
             i += 1
+
+    r = requests.get(
+        'http://www.paalerts.com/recent_pathalerts.aspx'
+    )
+    alertsoup = BeautifulSoup(r.content)
+    alert_time = alertsoup.find("label")
+    alert = alertsoup.findAll("div", {"class": "formField"})[1]
+
+    alert_text = "%s - %s" % (alert_time.string.strip(' \t\n\r'), alert.string.strip(' \t\n\r'))
+
     return render_to_response(
         'templates/pathtrain.pt', {
             'times': departure_times,
+            'alert': alert_text
         }, self)
 
 
