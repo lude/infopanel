@@ -13,6 +13,8 @@ requires = [
     'pyramid_tm',
     'zope.sqlalchemy',
     'waitress',
+    'gtfs',
+    'beautifulsoup',
     'rauth',
     ]
 
