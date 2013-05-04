@@ -8,7 +8,7 @@
  <span style="font-weight:normal">${minutely['summary']}</span></h4></td></tr>
  <tr><td><h4>Next 24 Hours<br/>
  <span style="font-weight:normal">${hourly['summary']}</span></h4></td></tr>
- <tr><td><h4>Next Week<br/>
+ <tr><td><h4>This Week<br/>
  <span style="font-weight:normal">${daily['summary']}</span></h4></td></tr>
  <tr tal:repeat="byday weekly"><td>
  <h2><span style="float:right;" class="weather-icon" data-icon="${byday['icon']}"></span></h2>
