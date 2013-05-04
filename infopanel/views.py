@@ -264,11 +264,13 @@ def path_train(self):
     r = requests.get(
         'http://www.paalerts.com/recent_pathalerts.aspx'
     )
-    alertsoup = BeautifulSoup(r.content)
-    alert_time = alertsoup.find("label")
-    alert = alertsoup.findAll("div", {"class": "formField"})[1]
-
-    alert_text = "%s - %s" % (alert_time.string.strip(' \t\n\r'), alert.string.strip(' \t\n\r'))
+    try:
+        alertsoup = BeautifulSoup(r.content)
+        alert_time = alertsoup.find("label")
+        alert = alertsoup.findAll("div", {"class": "formField"})[1]
+        alert_text = "%s - %s" % (alert_time.string.strip(' \t\n\r'), alert.string.strip(' \t\n\r'))
+    except IndexError:
+        alert_text = ""
 
     return render_to_response(
         'templates/pathtrain.pt', {
