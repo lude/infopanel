@@ -123,6 +123,7 @@ def forecastio(self):
     currently = {}
     currently['icon'] = webfont.get(weather['currently']['icon'], ')')
     currently['summary'] = weather['currently']['summary']
+    currently['humidity'] = int(weather['currently']['humidity'] * 100)
     currently['temperature'] = int(weather['currently']['temperature'])
 
     minutely = {}
