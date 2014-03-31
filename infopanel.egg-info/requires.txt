@@ -1,0 +1,10 @@
+pyramid
+SQLAlchemy
+transaction
+pyramid_tm
+zope.sqlalchemy
+waitress
+gtfs
+beautifulsoup
+rauth
+oauth2

@@ -1,16 +1,11 @@
-from pyramid.response import Response
-from pyramid.renderers import render_to_response
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound
 
 import requests
-import base64
-import sys
-import os
 import json
-import datetime
 import oauth2 as oauth
-import time
+
+from datetime import datetime
+from datetime import timedelta
 
 
 def oauth_req(url, key, secret, http_method="GET", post_body='',
@@ -61,7 +56,6 @@ def pretty_date(time=False):
     pretty string like 'an hour ago', 'Yesterday', '3 months ago',
     'just now', etc
     """
-    from datetime import datetime
     now = datetime.now()
     if type(time) is int:
         diff = now - datetime.fromtimestamp(time)
@@ -91,13 +85,10 @@ def pretty_date(time=False):
     return str(day_diff / 365) + "y"
 
 
-@view_config(route_name='index')
-def index(self):
-    return render_to_response('templates/index.pt', {'foo': 1}, self)
-
-
-@view_config(route_name='forecastio')
+@view_config(route_name='forecastio', renderer='json')
 def forecastio(self):
+    self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+    self.response.headers['Access-Control-Allow-Origin'] = '*'
     # http://www.alessioatzeni.com/meteocons/ -> forecast.io conversion table
     webfont = {
         'clear-day': 'B',
@@ -113,8 +104,10 @@ def forecastio(self):
     }
 
     # grab the forecast.io json
+    apikey = '3df3692a7ae010dc994ead5bac3655f2'
+    latlong = '40.73853,-74.03145'
     r = requests.get(
-        'https://api.forecast.io/forecast/3df3692a7ae010dc994ead5bac3655f2/40.73853,-74.03145'
+        'https://api.forecast.io/forecast/%s/%s' % (apikey, latlong)
     )
 
     #pythonize it
@@ -144,7 +137,7 @@ def forecastio(self):
         if daycount is 5:
             break
         d = {}
-        d['day'] = datetime.datetime.fromtimestamp(forecast['time']).strftime('%A')
+        d['day'] = datetime.fromtimestamp(forecast['time']).strftime('%A')
         d['high'] = int(forecast['temperatureMax'])
         d['low'] = int(forecast['temperatureMin'])
         d['windspeed'] = int(forecast['windSpeed'])
@@ -157,18 +150,20 @@ def forecastio(self):
         weekly.append(d)
         daycount += 1
 
-    return render_to_response(
-        'templates/forecastio.pt', {
-            'currently': currently,
-            'minutely': minutely,
-            'hourly': hourly,
-            'daily': daily,
-            'weekly': weekly,
-        }, self)
+    return {
+        'currently': currently,
+        'minutely': minutely,
+        'hourly': hourly,
+        'daily': daily,
+        'weekly': weekly,
+    }
 
 
-@view_config(route_name='redditnews')
+@view_config(route_name='redditnews', renderer='json')
 def redditnews(self):
+    self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+    self.response.headers['Access-Control-Allow-Origin'] = '*'
+
     r = requests.get(
         "http://www.reddit.com/r/worldnews+news.json"
     )
@@ -179,64 +174,72 @@ def redditnews(self):
     articlecount = 0
     for a in j:
         d = {}
+        d['id'] = a['data']['name']
         d['url'] = a['data']['url']
         d['title'] = a['data']['title']
         d['subreddit'] = a['data']['subreddit']
         d['score'] = a['data']['score']
         d['author'] = a['data']['author']
-        d['created'] = pretty_date(int(a['data']['created']))
+        d['created'] = a['data']['created']
         news.append(d)
 
-    return render_to_response(
-        'templates/reddit.pt', {
-            'news': news,
-        }, self)
+    return news
 
 
-@view_config(route_name='twitter')
+@view_config(route_name='twitter', renderer='json')
 def twitter(self):
+    self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+    self.response.headers['Access-Control-Allow-Origin'] = '*'
+
     home_timeline = oauth_req(
         'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833',
         '57659893-ucMjCx9xZ5IqNNIJuuewld8gd3PtuTwTSFJyVcFNg',
         'dLt7KQfpsdLUjm7MyVFywT244t0LtUM5OROTWtmR9Q',
     )
 
+    print home_timeline
     t = json.loads(home_timeline)
 
     tweets = []
     tcount = 0
     for tw in t:
         d = {}
+        d['id'] = tw['id']
         d['text'] = tw['text']
+        d['created_at'] = tw['created_at']
         d['user'] = tw['user']['screen_name']
         d['userpic'] = tw['user']['profile_image_url']
         tweets.append(d)
         tcount += 1
 
-    return render_to_response(
-        'templates/twitter.pt', {
-            'tweets': tweets,
-        }, self)
+    return tweets
 
 
-@view_config(route_name='pathtrain')
+@view_config(route_name='pathtrain', renderer='json')
 def path_train(self):
     from gtfs import Schedule
-    from gtfs.types import TransitTime
+    from gtfs.types import Time
     from gtfs.entity import *
     from sqlalchemy import and_
     from BeautifulSoup import BeautifulSoup
 
+    self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+    self.response.headers['Access-Control-Allow-Origin'] = '*'
+
     sched = Schedule("path.db")
 
-    nowtime = datetime.datetime.now().strftime('%H:%M:%S')
-    nowdate = datetime.datetime.now().date()
-    now = datetime.datetime.now()
+    nowtime = datetime.now().strftime('%H:%M:%S')
+    nowdate = datetime.now().date()
+    now = datetime.now()
     seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
-    periods = sched.service_for_date(nowdate)
+    periods = sched.service_periods  # (nowdate)
+    service_ids = []
+
+    for period in periods:
+        service_ids.append(period.service_id)
 
     q = sched.session.query(StopTime).join(Stop).join(Trip).join(Route).filter(
-        Trip.service_id.in_(periods)
+        Trip.service_id.in_(service_ids)
     ).filter(
         Stop.stop_name == "Hoboken"
     ).filter(
@@ -254,9 +257,11 @@ def path_train(self):
         if i == 2:
             break
         if stop.departure_time.val > seconds_since_midnight and stop.departure_time.val < seconds_since_midnight + 7200:
-            d = datetime.timedelta(seconds=(stop.departure_time.val - seconds_since_midnight))
+            d = timedelta(
+                seconds=(stop.departure_time.val - seconds_since_midnight)
+            )
             time = "%s (%d minutes)" % (
-                (datetime.datetime.now() + d).strftime('%I:%M%p'),
+                (datetime.now() + d).strftime('%I:%M%p'),
                 (int((stop.departure_time.val - seconds_since_midnight) / 60))
             )
             departure_times.append(time)
@@ -269,19 +274,23 @@ def path_train(self):
         alertsoup = BeautifulSoup(r.content)
         alert_time = alertsoup.find("label")
         alert = alertsoup.findAll("div", {"class": "formField"})[1]
-        alert_text = "%s - %s" % (alert_time.string.strip(' \t\n\r'), alert.string.strip(' \t\n\r'))
+        alert_text = "%s - %s" % (
+            alert_time.string.strip(' \t\n\r'),
+            alert.string.strip(' \t\n\r')
+        )
     except IndexError:
         alert_text = ""
 
-    return render_to_response(
-        'templates/pathtrain.pt', {
-            'times': departure_times,
-            'alert': alert_text
-        }, self)
+    return {
+        'times': departure_times,
+        'alerts': alert_text
+    }
 
 
-@view_config(route_name='greeting')
+@view_config(route_name='greeting', renderer='json')
 def greeting(self):
+    self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+    self.response.headers['Access-Control-Allow-Origin'] = '*'
     from time import strftime
 
     #TODO this seems like a backward way to do this
@@ -297,14 +306,16 @@ def greeting(self):
         retval = "Night"
     if 0 <= hour <= 1:
         retval = "Night"
-    return Response(retval)
+    return {'greeting': retval}
 
 
-@view_config(route_name='clock')
+@view_config(route_name='clock', renderer='json')
 def clock(self):
+    self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
+    self.response.headers['Access-Control-Allow-Origin'] = '*'
     from time import strftime
 
     #TODO this seems like a backward way to do this
     clock = strftime("%a %m/%d %I:%M %p")
 
-    return Response(clock)
+    return {'clock': clock}

@@ -16,6 +16,7 @@ requires = [
     'gtfs',
     'beautifulsoup',
     'rauth',
+    'oauth2',
     ]
 
 setup(name='infopanel',
