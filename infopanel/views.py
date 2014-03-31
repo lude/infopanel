@@ -267,6 +267,7 @@ def path_train(self):
             departure_times.append(time)
             i += 1
 
+    """
     r = requests.get(
         'http://www.paalerts.com/recent_pathalerts.aspx'
     )
@@ -279,7 +280,8 @@ def path_train(self):
             alert.string.strip(' \t\n\r')
         )
     except IndexError:
-        alert_text = ""
+    """
+    alert_text = ""
 
     return {
         'times': departure_times,
