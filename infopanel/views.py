@@ -164,14 +164,18 @@ def redditnews(self):
     self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
     self.response.headers['Access-Control-Allow-Origin'] = '*'
 
+    headers = {
+        'User-Agent': 'infobot by /u/davidj911'
+    }
+
     r = requests.get(
-        "http://www.reddit.com/r/worldnews+news.json"
+        "http://www.reddit.com/r/worldnews+news.json",
+        headers=headers
     )
 
     j = json.loads(r.content)['data']['children']
 
     news = []
-    articlecount = 0
     for a in j:
         d = {}
         d['id'] = a['data']['name']
@@ -217,36 +221,38 @@ def twitter(self):
 
 @view_config(route_name='pathtrain', renderer='json')
 def path_train(self):
-    from gtfs import Schedule
-    from gtfs.types import Time
-    from gtfs.entity import *
+    import gtfs
     from sqlalchemy import and_
-    from BeautifulSoup import BeautifulSoup
+    #from BeautifulSoup import BeautifulSoup
 
     self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
     self.response.headers['Access-Control-Allow-Origin'] = '*'
 
-    sched = Schedule("path.db")
+    sched = gtfs.Schedule("path.db")
 
     nowtime = datetime.now().strftime('%H:%M:%S')
     nowdate = datetime.now().date()
     now = datetime.now()
     seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
     periods = sched.service_periods  # (nowdate)
-    service_ids = []
+    dow = datetime.now().strftime("%a")
 
-    for period in periods:
-        service_ids.append(period.service_id)
+    if dow in ['Mon','Tue','Wed','Thu','Fri']:
+        service_id = '744A1674'
+    elif dow is 'Sat':
+        service_id = '745A1674'
+    else:
+        service_id = '746A1674'
 
-    q = sched.session.query(StopTime).join(Stop).join(Trip).join(Route).filter(
-        Trip.service_id.in_(service_ids)
+    q = sched.session.query(gtfs.entity.StopTime).join(gtfs.entity.Stop).join(gtfs.entity.Trip).join(gtfs.entity.Route).filter(
+        gtfs.entity.Trip.service_id == service_id
     ).filter(
-        Stop.stop_name == "Hoboken"
+        gtfs.entity.Stop.stop_id == 26730
     ).filter(
-        Route.route_id.in_(['859', '1024'])
+        gtfs.entity.Route.route_id.in_([859, 1024])
     ).filter(
-        Trip.direction_id == 1
-    ).order_by(StopTime.departure_time)
+        gtfs.entity.Trip.direction_id == 1
+    ).order_by(gtfs.entity.StopTime.departure_time)
 
     print q
     print q.count()
