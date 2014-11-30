@@ -13,10 +13,9 @@ requires = [
     'pyramid_tm',
     'zope.sqlalchemy',
     'waitress',
-    'gtfs',
-    'beautifulsoup',
-    'rauth',
-    'oauth2',
+    'pygtfs',
+    'beautifulsoup4',
+    'requests-oauthlib',
     ]
 
 setup(name='infopanel',

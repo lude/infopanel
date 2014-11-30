@@ -1,29 +1,12 @@
-from pyramid.view import view_config
-
 import requests
 import json
-import oauth2 as oauth
+import pygtfs
 
+from pyramid.view import view_config
+from requests_oauthlib import OAuth1Session
 from datetime import datetime
 from datetime import timedelta
-
-
-def oauth_req(url, key, secret, http_method="GET", post_body='',
-              http_headers=None):
-    consumer = oauth.Consumer(
-        key='uJOBRUQCVQvVSkOcVF4Pg',
-        secret='U49Nciwx63kLV32KCoiGc3U13467Y38UsB5G45E1my4'
-    )
-    token = oauth.Token(key=key, secret=secret)
-    client = oauth.Client(consumer, token)
-
-    resp, content = client.request(
-        url,
-        method=http_method,
-        body=post_body,
-        headers=http_headers,
-    )
-    return content
+from sqlalchemy import and_
 
 
 def degrees_to_direction(deg):
@@ -111,7 +94,7 @@ def forecastio(self):
     )
 
     #pythonize it
-    weather = json.loads(r.content)
+    weather = r.json()
 
     currently = {}
     currently['icon'] = webfont.get(weather['currently']['icon'], ')')
@@ -195,14 +178,14 @@ def twitter(self):
     self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
     self.response.headers['Access-Control-Allow-Origin'] = '*'
 
-    home_timeline = oauth_req(
-        'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833',
-        '57659893-ucMjCx9xZ5IqNNIJuuewld8gd3PtuTwTSFJyVcFNg',
-        'dLt7KQfpsdLUjm7MyVFywT244t0LtUM5OROTWtmR9Q',
-    )
+    twitter = OAuth1Session('uJOBRUQCVQvVSkOcVF4Pg',
+                            client_secret='U49Nciwx63kLV32KCoiGc3U13467Y38UsB5G45E1my4',
+                            resource_owner_key='57659893-ucMjCx9xZ5IqNNIJuuewld8gd3PtuTwTSFJyVcFNg',
+                            resource_owner_secret='dLt7KQfpsdLUjm7MyVFywT244t0LtUM5OROTWtmR9Q')
 
-    print home_timeline
-    t = json.loads(home_timeline)
+    url = 'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833'
+    r = twitter.get(url)
+    t = r.json()
 
     tweets = []
     tcount = 0
@@ -221,14 +204,10 @@ def twitter(self):
 
 @view_config(route_name='pathtrain', renderer='json')
 def path_train(self):
-    import gtfs
-    from sqlalchemy import and_
-    #from BeautifulSoup import BeautifulSoup
-
     self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
     self.response.headers['Access-Control-Allow-Origin'] = '*'
 
-    sched = gtfs.Schedule("path.db")
+    sched = pygtfs.Schedule("path.db")
 
     nowtime = datetime.now().strftime('%H:%M:%S')
     nowdate = datetime.now().date()
@@ -244,18 +223,15 @@ def path_train(self):
     else:
         service_id = '746A1674'
 
-    q = sched.session.query(gtfs.entity.StopTime).join(gtfs.entity.Stop).join(gtfs.entity.Trip).join(gtfs.entity.Route).filter(
-        gtfs.entity.Trip.service_id == service_id
+    q = sched.session.query(pygtfs.entity.StopTime).join(pygtfs.entity.Stop).join(pygtfs.entity.Trip).join(pygtfs.entity.Route).filter(
+        pygtfs.entity.Trip.service_id == service_id
     ).filter(
-        gtfs.entity.Stop.stop_id == 26730
+        pygtfs.entity.Stop.stop_id == 26730
     ).filter(
-        gtfs.entity.Route.route_id.in_([859, 1024])
+        pygtfs.entity.Route.route_id.in_([859, 1024])
     ).filter(
-        gtfs.entity.Trip.direction_id == 1
-    ).order_by(gtfs.entity.StopTime.departure_time)
-
-    print q
-    print q.count()
+        pygtfs.entity.Trip.direction_id == 1
+    ).order_by(pygtfs.entity.StopTime.departure_time)
 
     i = 0
     departure_times = []
@@ -299,7 +275,6 @@ def path_train(self):
 def greeting(self):
     self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
     self.response.headers['Access-Control-Allow-Origin'] = '*'
-    from time import strftime
 
     #TODO this seems like a backward way to do this
     hour = int(strftime("%H"))
@@ -321,7 +296,6 @@ def greeting(self):
 def clock(self):
     self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
     self.response.headers['Access-Control-Allow-Origin'] = '*'
-    from time import strftime
 
     #TODO this seems like a backward way to do this
     clock = strftime("%a %m/%d %I:%M %p")
