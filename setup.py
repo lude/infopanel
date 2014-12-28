@@ -13,7 +13,7 @@ requires = [
     'pyramid_tm',
     'zope.sqlalchemy',
     'waitress',
-    'pygtfs',
+    'gtfs',
     'beautifulsoup4',
     'requests-oauthlib',
     ]

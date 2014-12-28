@@ -1,11 +1,12 @@
 import requests
 import json
-import pygtfs
+#import gtfs
 
 from pyramid.view import view_config
 from requests_oauthlib import OAuth1Session
 from datetime import datetime
 from datetime import timedelta
+from time import strftime
 from sqlalchemy import and_
 
 
@@ -156,7 +157,7 @@ def redditnews(self):
         headers=headers
     )
 
-    j = json.loads(r.content)['data']['children']
+    j = r.json()['data']['children']
 
     news = []
     for a in j:
@@ -207,7 +208,8 @@ def path_train(self):
     self.response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With'
     self.response.headers['Access-Control-Allow-Origin'] = '*'
 
-    sched = pygtfs.Schedule("path.db")
+    """
+    sched = gtfs.Schedule("path.db")
 
     nowtime = datetime.now().strftime('%H:%M:%S')
     nowdate = datetime.now().date()
@@ -223,15 +225,15 @@ def path_train(self):
     else:
         service_id = '746A1674'
 
-    q = sched.session.query(pygtfs.entity.StopTime).join(pygtfs.entity.Stop).join(pygtfs.entity.Trip).join(pygtfs.entity.Route).filter(
-        pygtfs.entity.Trip.service_id == service_id
+    q = sched.session.query(gtfs.entity.StopTime).join(gtfs.entity.Stop).join(gtfs.entity.Trip).join(gtfs.entity.Route).filter(
+        gtfs.entity.Trip.service_id == service_id
     ).filter(
-        pygtfs.entity.Stop.stop_id == 26730
+        gtfs.entity.Stop.stop_id == 26730
     ).filter(
-        pygtfs.entity.Route.route_id.in_([859, 1024])
+        gtfs.entity.Route.route_id.in_([859, 1024])
     ).filter(
-        pygtfs.entity.Trip.direction_id == 1
-    ).order_by(pygtfs.entity.StopTime.departure_time)
+        gtfs.entity.Trip.direction_id == 1
+    ).order_by(gtfs.entity.StopTime.departure_time)
 
     i = 0
     departure_times = []
@@ -249,7 +251,6 @@ def path_train(self):
             departure_times.append(time)
             i += 1
 
-    """
     r = requests.get(
         'http://www.paalerts.com/recent_pathalerts.aspx'
     )
@@ -263,6 +264,8 @@ def path_train(self):
         )
     except IndexError:
     """
+
+    departure_times = {}
     alert_text = ""
 
     return {
