@@ -153,7 +153,7 @@ def redditnews(self):
     }
 
     r = requests.get(
-        "http://www.reddit.com/r/worldnews+news.json?limit=10",
+        "http://www.reddit.com/r/worldnews+news.json?limit=5",
         headers=headers
     )
 
@@ -169,7 +169,7 @@ def redditnews(self):
         d['subreddit'] = a['data']['subreddit']
         d['score'] = a['data']['score']
         d['author'] = a['data']['author']
-        d['created'] = a['data']['created']
+        d['created'] = a['data']['created_utc']
         d['displayOrder'] = i
         i += 1
         news.append(d)
@@ -187,7 +187,7 @@ def twitter(self):
                             resource_owner_key='57659893-ucMjCx9xZ5IqNNIJuuewld8gd3PtuTwTSFJyVcFNg',
                             resource_owner_secret='dLt7KQfpsdLUjm7MyVFywT244t0LtUM5OROTWtmR9Q')
 
-    url = 'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833'
+    url = 'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833&count=5'
     r = twitter.get(url)
     t = r.json()
 
