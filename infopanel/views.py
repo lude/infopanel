@@ -198,7 +198,8 @@ def twitter(self):
         d['id'] = tw['id']
         d['text'] = tw['text']
         d['created_at'] = tw['created_at']
-        d['user'] = tw['user']['screen_name']
+        d['name'] = tw['user']['name']
+        d['handle'] = tw['user']['screen_name']
         d['userpic'] = tw['user']['profile_image_url']
         tweets.append(d)
         tcount += 1
