@@ -153,13 +153,14 @@ def redditnews(self):
     }
 
     r = requests.get(
-        "http://www.reddit.com/r/worldnews+news.json",
+        "http://www.reddit.com/r/worldnews+news.json?limit=10",
         headers=headers
     )
 
     j = r.json()['data']['children']
 
     news = []
+    i = 0
     for a in j:
         d = {}
         d['id'] = a['data']['name']
@@ -169,6 +170,8 @@ def redditnews(self):
         d['score'] = a['data']['score']
         d['author'] = a['data']['author']
         d['created'] = a['data']['created']
+        d['displayOrder'] = i
+        i += 1
         news.append(d)
 
     return news
