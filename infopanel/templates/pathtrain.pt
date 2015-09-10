@@ -1,7 +1,0 @@
-<table class="table table-bordered table-condensed">
- <th>Path Trains</th>
- <tr tal:repeat="r times"><td>
-  <h4>${r}</h4>
- </td></tr>
- <tr><td>${alert}</td></tr>
-</table>

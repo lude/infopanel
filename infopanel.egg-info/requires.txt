@@ -1,9 +1,0 @@
-pyramid
-SQLAlchemy
-transaction
-pyramid_tm
-zope.sqlalchemy
-waitress
-gtfs
-beautifulsoup4
-requests-oauthlib

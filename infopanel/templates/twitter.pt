@@ -1,6 +1,0 @@
-<table class="table table-bordered table-condensed">
- <th>Twitter</th>
- <tr tal:repeat="t tweets"><td>
- <img class='img-polaroid pull-left' src="${t['userpic']}"/>@${t['user']} - ${t['text']}
- </td></tr>
-</table>
