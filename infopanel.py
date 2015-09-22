@@ -7,6 +7,7 @@ from datetime import datetime
 import requests
 
 app = Flask(__name__)
+app.config.from_envvar('INFOPANEL_SETTINGS_FILE')
 
 
 @app.route('/clock', methods=['GET'])
@@ -34,10 +35,10 @@ def greeting():
 
 @app.route('/twitter', methods=['GET'])
 def twitter():
-    twitter = OAuth1Session('uJOBRUQCVQvVSkOcVF4Pg',
-                            client_secret='U49Nciwx63kLV32KCoiGc3U13467Y38UsB5G45E1my4',
-                            resource_owner_key='57659893-ucMjCx9xZ5IqNNIJuuewld8gd3PtuTwTSFJyVcFNg',
-                            resource_owner_secret='dLt7KQfpsdLUjm7MyVFywT244t0LtUM5OROTWtmR9Q')
+    twitter = OAuth1Session(app.config.client_key
+                            client_secret=app.config.client_secret,
+                            resource_owner_key=app.config.ro_key,
+                            resource_owner_secret=app.config.ro_secret)
 
     url = 'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833&count=5'
     r = twitter.get(url)
