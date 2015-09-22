@@ -35,7 +35,7 @@ def greeting():
 
 @app.route('/twitter', methods=['GET'])
 def twitter():
-    twitter = OAuth1Session(app.config.client_key
+    twitter = OAuth1Session(app.config.client_key,
                             client_secret=app.config.client_secret,
                             resource_owner_key=app.config.ro_key,
                             resource_owner_secret=app.config.ro_secret)
