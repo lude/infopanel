@@ -40,7 +40,7 @@ def twitter():
                             resource_owner_key=app.config['RO_KEY'],
                             resource_owner_secret=app.config['RO_SECRET'])
 
-    url = 'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833&count=5'
+    url = 'https://api.twitter.com/1.1/lists/statuses.json?list_id=%s&count=5' % app.config['TWITTER_LIST_ID']
     r = twitter.get(url)
     t = r.json()
 
@@ -76,10 +76,9 @@ def forecastio():
     }
 
     # grab the forecast.io json
-    apikey = '3df3692a7ae010dc994ead5bac3655f2'
-    latlong = '40.73853,-74.03145'
+    latlong = '%s,%s' % (app.config['FORECAST_LAT'], app.config['FORECAST_LONG'])
     r = requests.get(
-        'https://api.forecast.io/forecast/%s/%s' % (apikey, latlong)
+        'https://api.forecast.io/forecast/%s/%s' % (app.config['FORECAST_API_KEY'], latlong)
     )
 
     #pythonize it
