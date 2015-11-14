@@ -154,6 +154,7 @@ def redditnews():
         d['score'] = a['data']['score']
         d['author'] = a['data']['author']
         d['created'] = a['data']['created_utc']
+        d['flair'] = a['data']['link_flair_text']
         d['displayOrder'] = i
         i += 1
         news.append(d)
