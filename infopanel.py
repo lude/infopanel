@@ -89,6 +89,12 @@ def forecastio():
     currently['summary'] = weather['currently']['summary']
     currently['humidity'] = int(weather['currently']['humidity'] * 100)
     currently['temperature'] = int(weather['currently']['temperature'])
+    currently['feelslike'] = int(weather['currently']['apparentTemperature'])
+    currently['windSpeed'] = weather['currently']['windSpeed']
+    try:
+        currently['windBearing'] = degrees_to_direction(weather['currently']['windBearing'])
+    except KeyError:
+        currently['windBearing'] = ''
 
     minutely = {}
     minutely['icon'] = webfont.get(weather['minutely']['icon'], ')')
