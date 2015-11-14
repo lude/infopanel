@@ -35,10 +35,10 @@ def greeting():
 
 @app.route('/twitter', methods=['GET'])
 def twitter():
-    twitter = OAuth1Session(app.config.client_key,
-                            client_secret=app.config.client_secret,
-                            resource_owner_key=app.config.ro_key,
-                            resource_owner_secret=app.config.ro_secret)
+    twitter = OAuth1Session(app.config['CLIENT_KEY'],
+                            client_secret=app.config['CLIENT_SECRET'],
+                            resource_owner_key=app.config['RO_KEY'],
+                            resource_owner_secret=app.config['RO_SECRET'])
 
     url = 'https://api.twitter.com/1.1/lists/statuses.json?list_id=86741833&count=5'
     r = twitter.get(url)
